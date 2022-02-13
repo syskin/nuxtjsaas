@@ -1,0 +1,13 @@
+:root {
+    --vs-primary: 91, 60, 196 !important;
+    --vs-success: 23, 201, 100;
+    --vs-danger: 242, 19, 93;
+    --vs-warn: 254, 130, 0;
+    --vs-dark: 36, 33, 69;
+  }
+
+button {
+    &:focus {
+      outline: transparent !important;
+    }
+}
