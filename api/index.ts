@@ -13,7 +13,7 @@ import bodyParser from 'body-parser';
 
 if (!apps.length) initializeApp({
   credential: applicationDefault(),
-  databaseURL: process.env.FIREBASE_DBURL
+  databaseURL: process.env.FIREBASE_DBURL || ''
 });
 
 export const db = firestore();
@@ -35,7 +35,6 @@ app.use(
   bodyParser.json({
     verify: (req: Request, res: Response, buf) => {
       const url = req.originalUrl;
-      console.log(url)
       if (url.startsWith('/api/stripe/webhook')) {
         req.rawBody = buf.toString();
       }

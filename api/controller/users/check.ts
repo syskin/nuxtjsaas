@@ -1,37 +1,37 @@
 import { Request, Response, NextFunction } from "express";
-import { add, get, getById, updateById } from "../../services/user";
+import { add, get } from "../../services/user";
 import HttpException from "../../exceptions/HttpException";
-type LoginProperties = {
-    sub: string
-    email: string
-}
+import { CheckProperties } from "../../../@types/users";
 
-export const checkController = async (req: Request<LoginProperties>, res: Response, next: NextFunction) => {
+export const checkController = async (req: Request<CheckProperties>, res: Response, next: NextFunction) => {
     try {
 
         const { email, sub } = req?.body;
-        console.log(`Check user `, req.auth?.payload)
-        /*
-        const createdUserId = await add({
-            email,
-            password,
-        })
 
-        await updateById(createdUserId, { email, password: '321' });
-
-        const user = await getById(createdUserId)
-
-        const users = await get([{
-            key: 'created',
+        const user = await get([{
+            key: 'sub',
             operator: '==',
-            value: 1644149893211
+            value: sub
         },
         {
-            key: 'password',
+            key: 'email',
             operator: '==',
-            value: '123'
-        }])
-        */
+            value: email
+        }
+        ])
+
+        if (!user?.[0]) {
+            console.log(`Create a new user in Firebase DB`)
+            await add({
+                email,
+                sub,
+            })
+        } else {
+            console.log(`Update existing user in Firebase DB`)
+        }
+
+        // We can return users right to use other functionnality and complete user payload for frontend
+
         return res.status(200).json({
             status: `success`,
             statusCode: 200,

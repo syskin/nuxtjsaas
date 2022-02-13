@@ -50,11 +50,13 @@ export const updateOneUserById = async (userId: string, userInformation: UserInf
  * @param filters 
  * @returns UserInformation[]
  */
-export const getUsers = async (filters: Filters) => {
+export const getUsers = async (filters: Filters, id = false) => {
     let query = db.collection('users') as firestore.Query<firestore.DocumentData>
     filters.map(filter => {
         query = query.where(filter.key, filter.operator, filter.value)
     })
     const users = await query.get()
+
+    if (id) return users.docs.map(user => user.id) as string[]
     return users.docs.map(user => user.data()) as UserInformation[]
 }

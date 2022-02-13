@@ -19,6 +19,8 @@ export default {
         customerEmail: this.loggedInUser.email,
         clientReferenceId: this.loggedInUser.sub,
         locale: this.loggedInUser.locale,
+        successUrl: window.location.origin,
+        cancelUrl: window.location.origin,
         mode: 'subscription',
         lineItems: [
           {

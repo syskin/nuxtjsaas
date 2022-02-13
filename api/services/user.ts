@@ -52,7 +52,7 @@ export const updateById = async (id: string, userInformation: UserInformation) =
     try {
         if (!id) throw new Error(`User id missing`);
         if (!userInformation) throw new Error(`User information missing`);
-
+        userInformation.lastModified = Date.now()
         const user = await updateOneUserById(id, userInformation);
 
         return user;
@@ -66,9 +66,9 @@ export const updateById = async (id: string, userInformation: UserInformation) =
  * @param filters 
  * @returns 
  */
-export const get = async (filters: Filters) => {
+export const get = async (filters: Filters, onlyId = false) => {
     try {
-        const users = await getUsers(filters)
+        const users = await getUsers(filters, onlyId)
 
         return users
     } catch (error: unknown) {

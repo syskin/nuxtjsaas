@@ -1,6 +1,23 @@
 export type UserInformation = {
-    email: string
+    email?: string
     lastModified?: number
     created?: number
-    password?: string
+    sub?: string
+    subscription?: string
+    status?: string
+    period?: {
+        start: number
+        end: number
+    }
+    active_plan?: string
+}
+
+export type UserInformationToCheck = {
+    email: string
+    sub: string
+}
+
+export type CheckProperties = {
+    sub: string
+    email: string
 }

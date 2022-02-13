@@ -7,6 +7,7 @@
 export default {
   methods: {
     async logout() {
+      console.log(`Logout`)
       this.$auth.logout()
     },
   },
