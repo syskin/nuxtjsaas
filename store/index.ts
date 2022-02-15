@@ -22,4 +22,9 @@ export const getters: GetterTree<RootState, RootState> = {
     loggedInUser(state) {
         return state.auth.user
     },
+
+    isSubscribed(state) {
+        console.log(state.auth.user)
+        return state.auth.user?.isSubscribed
+    },
 }

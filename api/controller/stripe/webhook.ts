@@ -4,7 +4,7 @@ import Stripe
     from "stripe";
 import { get, updateById } from "../../services/user";
 
-type CheckoutSessionCompleted = {
+type CheckoutSession = {
     client_reference_id: string
     customer_email: string
     mode: Stripe.Checkout.Session.Mode
@@ -13,7 +13,7 @@ type CheckoutSessionCompleted = {
     subscription: string
 }
 
-type PayementSucceded = {
+type InvoicePayement = {
     customer_email: string
     payment_status: Stripe.Checkout.Session.PaymentStatus
     status: Stripe.PaymentIntent.Status
@@ -30,7 +30,6 @@ export const webhookController = async (req: Request, res: Response, next: NextF
 
         const sig = req.headers['stripe-signature'];
         if (!sig) return new HttpException(500, `No signature`)
-
         const webhookSecret = process.env.STRIPE_WHS || ''
 
         const event = stripe.webhooks.constructEvent(
@@ -39,11 +38,9 @@ export const webhookController = async (req: Request, res: Response, next: NextF
             webhookSecret
         )
 
-        // delete subscribtion stripe.subscriptions.del('sub_id');
-
         switch (event.type) {
             case 'checkout.session.completed': {
-                const { client_reference_id, customer_email, subscription } = event.data.object as CheckoutSessionCompleted
+                const { client_reference_id, customer_email, subscription } = event.data.object as CheckoutSession
                 const user = await get([{
                     key: 'sub',
                     operator: '==',
@@ -62,12 +59,30 @@ export const webhookController = async (req: Request, res: Response, next: NextF
                         subscription
                     })
                 }
-                console.log('checkout.session.completed')
                 break;
             }
             case 'invoice.payment_succeeded': {
-                let { customer_email, subscription, status, lines } = event.data.object as PayementSucceded
+                let { customer_email, subscription, status, lines } = event.data.object as InvoicePayement
+                const subscribedUser = await get([{
+                    key: 'subscription',
+                    operator: '==',
+                    value: subscription
+                }, {
+                    key: 'email',
+                    operator: '==',
+                    value: customer_email
+                }
+                ], true) as string[]
 
+                if (!subscribedUser?.[0]) return new HttpException(404, `No subscribed user`)
+                await updateById(subscribedUser[0], {
+                    period: lines?.data?.[0]?.period,
+                    status
+                })
+                break;
+            }
+            case 'invoice.payment_failed': {
+                let { customer_email, subscription, status } = event.data.object as InvoicePayement
 
                 const subscribedUser = await get([{
                     key: 'subscription',
@@ -83,19 +98,14 @@ export const webhookController = async (req: Request, res: Response, next: NextF
                 if (!subscribedUser?.[0]) return new HttpException(404, `No subscribed user`)
                 else {
                     await updateById(subscribedUser[0], {
-                        period: lines?.data?.[0]?.period,
+                        period: { end: 0, start: 0 },
                         status
                     })
                 }
-
-                console.log('invoice.payment_succeeded')
                 break;
             }
-            case 'invoice.payment_failed':
-                // Set not active if payement automatically failed
-                break;
             default:
-                console.log('Default')
+                console.log(event.type)
                 break;
         }
         return res.status(200).json({
@@ -104,6 +114,6 @@ export const webhookController = async (req: Request, res: Response, next: NextF
         });
     } catch (e) {
         console.log(e)
-        return next(new HttpException(500, `Une erreur est survenue`));
+        return next(new HttpException(500, `Something went wrong`));
     }
 };

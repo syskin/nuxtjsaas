@@ -9,14 +9,22 @@
       </h2>
       <div class="center con-switch">
         <vs-button
+          v-show="!isAuthenticated"
           :active="active == 0"
           @click=";(active = !active), launchAuth0()"
         >
           Login
         </vs-button>
-        <vs-button v-if="isAuthenticated" @click="getMe()"> Get Me </vs-button>
-        <Stripe v-if="isAuthenticated" />
-        <nuxt-link v-if="isAuthenticated" to="/logout">Logout page</nuxt-link>
+        <vs-button v-show="isAuthenticated" @click="getMe()">
+          Get Me
+        </vs-button>
+        <no-ssr>
+          <Stripe v-show="isAuthenticated && !isSubscribed" />
+          <vs-button v-show="isSubscribed" @click="unsuscribe()">
+            Unsuscribe
+          </vs-button>
+        </no-ssr>
+        <nuxt-link v-show="isAuthenticated" to="/logout">Logout page</nuxt-link>
       </div>
     </div>
   </div>
@@ -32,7 +40,7 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['isAuthenticated']),
+    ...mapGetters(['isAuthenticated', 'isSubscribed']),
   },
   methods: {
     launchAuth0() {
@@ -40,6 +48,10 @@ export default {
     },
     async getMe() {
       await this.$usersRepository.getMe()
+    },
+    async unsuscribe() {
+      const response = await this.$usersRepository.unsuscribe()
+      this.$auth.setUser({ ...this.$auth.user, ...response.user })
     },
   },
 }

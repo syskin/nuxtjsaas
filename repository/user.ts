@@ -9,4 +9,7 @@ export default ($axios: NuxtAxiosInstance) => ({
     getMe() {
         return $axios.$get(`/${prefixSingular}/me`)
     },
+    unsuscribe() {
+        return $axios.$get(`/${prefixSingular}/unsuscribe`)
+    },
 })

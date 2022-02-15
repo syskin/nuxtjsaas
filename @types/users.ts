@@ -10,6 +10,7 @@ export type UserInformation = {
         end: number
     }
     active_plan?: string
+    isSubscribed?: boolean
 }
 
 export type UserInformationToCheck = {

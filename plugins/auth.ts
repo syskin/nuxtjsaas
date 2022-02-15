@@ -9,7 +9,8 @@ export default async function (context: Context): Promise<Plugin | undefined> {
     const authStrategy = auth.strategy.name
     if (authStrategy === 'auth0') {
         const { sub, email } = context.app.$auth.user
-        await context.$usersRepository.check({ sub, email })
+        const checkedUser = await context.$usersRepository.check({ sub, email })
+        context.app.$auth.setUser({ ...context.app.$auth.user, ...checkedUser.user })
         console.log('Im auth0 authent')
     } else {
         console.log('Im not auth0 authent')
